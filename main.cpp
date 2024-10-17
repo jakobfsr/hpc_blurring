@@ -9,9 +9,9 @@ void blur_row(const cv::Mat& img_array, cv::Mat& dest_img, int start_row, int en
         for (int col = 0; col < img_array.cols; col++) {
             cv::Vec3i sum(0, 0, 0);
             int fields = 0;
-
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
+            int convolution_level = 5;
+            for (int i = -convolution_level; i <= convolution_level; i++) {
+                for (int j = -convolution_level; j <= convolution_level; j++) {
                     int r = row + i, c = col + j;
                     if (r >= 0 && r < img_array.rows && c >= 0 && c < img_array.cols) {
                         sum += img_array.at<cv::Vec3b>(r, c);
@@ -31,14 +31,12 @@ cv::Mat blur_array(const cv::Mat& img_array) {
     std::vector<std::thread> threads;
     int rows_per_thread = img_array.rows / num_threads;
 
-    // Threads erzeugen und parallel Zeilen bearbeiten
     for (int t = 0; t < num_threads; t++) {
         int start_row = t * rows_per_thread;
         int end_row = (t == num_threads - 1) ? img_array.rows : start_row + rows_per_thread;
         threads.emplace_back(blur_row, std::cref(img_array), std::ref(dest_img), start_row, end_row);
     }
 
-    // Warten, bis alle Threads fertig sind
     for (auto& th : threads) {
         th.join();
     }
@@ -78,6 +76,6 @@ void blur(const std::string& orig_path, int steps) {
 }
 
 int main() {
-    blur("/Users/jakobfischer/CLionProjects/untitled2/image-to-blur.jpg", 5);
+    blur("/Users/jakobfischer/CLionProjects/untitled2/img.png", 100);
     return 0;
 }
